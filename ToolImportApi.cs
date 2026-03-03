@@ -20,7 +20,7 @@ namespace MineMogul.ToolImportApi.Plugin
     {
         public const string PluginGuid = "com.main.toolimportapi";
         public const string PluginName = "Tool Import API";
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = "1.0.0";
 
         private static readonly Harmony HarmonyInstance = new Harmony(PluginGuid);
         private static ToolImportApiPlugin _instance;
