@@ -250,6 +250,76 @@ namespace MineMogul.ToolImportApi.Game
             return true;
         }
 
+        public bool TrySpawnToolToWorld(RegisteredTool tool, Vector3 position, Quaternion rotation, int quantity, out string message)
+        {
+            message = null;
+            if (tool == null || tool.TemplateObject == null)
+            {
+                message = "Tool template is missing.";
+                return false;
+            }
+
+            EnsureSaveRegistration(tool);
+
+            int spawnCount = Mathf.Max(1, quantity);
+            int spawned = 0;
+            for (int i = 0; i < spawnCount; i++)
+            {
+                Vector3 spawnPosition = position + UnityEngine.Random.insideUnitSphere * 0.5f;
+                GameObject instance = UnityEngine.Object.Instantiate(tool.TemplateObject, spawnPosition, rotation);
+                if (instance == null)
+                {
+                    continue;
+                }
+
+                instance.name = tool.Request.ToolId + ".WorldInstance";
+                instance.SetActive(false);
+
+                RuntimeImportedTool runtimeTool = instance.GetComponent<RuntimeImportedTool>();
+                if (runtimeTool == null)
+                {
+                    UnityEngine.Object.Destroy(instance);
+                    continue;
+                }
+
+                RebindModelReferences(runtimeTool, instance.transform);
+                runtimeTool.SavableObjectID = (SavableObjectID)tool.SavableId;
+                runtimeTool.InventoryIcon = tool.Icon;
+                runtimeTool.ProgrammerInventoryIcon = tool.Icon;
+                runtimeTool.Name = tool.Request.DisplayName;
+                runtimeTool.Description = string.IsNullOrWhiteSpace(tool.Request.Description)
+                    ? "Imported mod tool."
+                    : tool.Request.Description;
+                runtimeTool.Owner = null;
+
+                instance.transform.SetParent(null, worldPositionStays: true);
+                runtimeTool.HideViewModel();
+                runtimeTool.HideWorldModel(hide: false);
+
+                Rigidbody rb = instance.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = false;
+                    rb.useGravity = true;
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                    rb.interpolation = RigidbodyInterpolation.Interpolate;
+                }
+
+                instance.SetActive(true);
+                spawned++;
+            }
+
+            if (spawned <= 0)
+            {
+                message = "Failed to spawn world instances for '" + tool.FullToolId + "'.";
+                return false;
+            }
+
+            message = "Spawned " + spawned + "/" + spawnCount + " world instance(s) for '" + tool.FullToolId + "'.";
+            return true;
+        }
+
         public void EnsureSaveRegistration(RegisteredTool tool)
         {
             if (tool == null || tool.TemplateObject == null)

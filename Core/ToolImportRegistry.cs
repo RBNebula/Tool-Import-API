@@ -245,6 +245,25 @@ namespace MineMogul.ToolImportApi.Core
             return _gameToolFactory.TrySpawnToolToInventory(tool, out message);
         }
 
+        public bool TrySpawnToolFromShop(string fullToolId, Vector3 position, Quaternion rotation, int quantity, out string message)
+        {
+            message = null;
+            if (string.IsNullOrWhiteSpace(fullToolId))
+            {
+                message = "Full tool id is empty.";
+                return false;
+            }
+
+            RegisteredTool tool = GetRegisteredTool(fullToolId);
+            if (tool == null)
+            {
+                message = "No registered tool found for id: " + fullToolId;
+                return false;
+            }
+
+            return _gameToolFactory.TrySpawnToolToWorld(tool, position, rotation, quantity, out message);
+        }
+
         private IEnumerator FinalizePendingRoutine()
         {
             try
