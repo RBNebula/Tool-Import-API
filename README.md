@@ -12,6 +12,7 @@ Tool Import API handles:
 - Registration queue (safe to call during `Awake`)
 - Runtime tool creation from your embedded assets
 - Save/load prefab registration
+- Optional per-instance custom save/load callbacks
 - Optional ModMogul shop integration
 - Optional arm pose override loading from embedded `.arm-pose.cs`
 
@@ -58,6 +59,72 @@ request.CustomPositioningResourceName = "examplemod.mytool.arm-pose.cs";
 ```
 
 If custom positioning is enabled but no pose file is found, Tool Import API falls back to default pose and continues.
+
+### 3) Save custom per-instance tool state (optional)
+Use `CustomSaveData` and `CustomLoadData` in `ToolRegistrationRequest` when your tool has runtime settings (fire mode, zoom level, attachment state, etc.).
+
+```csharp
+[System.Serializable]
+private sealed class GunStateSaveData
+{
+    public int FireMode;
+    public bool SafetyOn;
+}
+
+ToolRegistrationRequest request = new ToolRegistrationRequest
+{
+    ModId = "examplemod",
+    ToolId = "mygun",
+    CacheNamespace = "examplemod",
+    DisplayName = "My Gun",
+    Description = "Example gun with persistent state.",
+    IconResourceName = "MyTool.Assets.Images.tool-icon.png",
+    WorldModelResourceName = "MyTool.Assets.Models.tool-world.glb",
+    ViewModelResourceName = "MyTool.Assets.Models.tool-view.glb",
+
+    CustomSaveData = tool =>
+    {
+        GunViewModelController vm = tool.GetComponentInChildren<GunViewModelController>(true);
+        if (vm == null)
+        {
+            return null;
+        }
+
+        return JsonUtility.ToJson(new GunStateSaveData
+        {
+            FireMode = vm.CurrentFireMode,
+            SafetyOn = vm.SafetyOn
+        });
+    },
+
+    CustomLoadData = (tool, customJson) =>
+    {
+        if (string.IsNullOrWhiteSpace(customJson))
+        {
+            return;
+        }
+
+        GunStateSaveData saved = JsonUtility.FromJson<GunStateSaveData>(customJson);
+        if (saved == null)
+        {
+            return;
+        }
+
+        GunViewModelController vm = tool.GetComponentInChildren<GunViewModelController>(true);
+        if (vm == null)
+        {
+            return;
+        }
+
+        vm.CurrentFireMode = saved.FireMode;
+        vm.SafetyOn = saved.SafetyOn;
+    }
+};
+```
+
+Notes:
+- Keep this payload small and JSON-serializable.
+- The callback runs per tool instance, so different copies of the same tool can keep different saved settings.
 
 ## Full Minimal Mod Example
 

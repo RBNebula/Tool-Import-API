@@ -1,9 +1,18 @@
 using UnityEngine;
+using MineMogul.ToolImportApi.Core;
 
 namespace MineMogul.ToolImportApi.Game
 {
     public sealed class RuntimeImportedTool : BaseHeldTool
     {
+        [System.Serializable]
+        private sealed class RuntimeImportedToolSaveData
+        {
+            public bool IsInPlayerInventory;
+            public int InventorySlotIndex = -1;
+            public string ToolImportCustomData;
+        }
+
         public string RegistrationKey;
         private Collider[] _toolColliders;
         private Rigidbody _toolRootRigidbody;
@@ -30,6 +39,27 @@ namespace MineMogul.ToolImportApi.Game
             }
 
             base.LoadFromSave(json);
+            ApplyCustomSaveData(json);
+        }
+
+        public override string GetCustomSaveData()
+        {
+            RuntimeImportedToolSaveData saveData = new RuntimeImportedToolSaveData
+            {
+                IsInPlayerInventory = Owner != null,
+                ToolImportCustomData = CaptureCustomSaveData()
+            };
+
+            if (saveData.IsInPlayerInventory)
+            {
+                PlayerInventory inventory = Object.FindFirstObjectByType<PlayerInventory>();
+                if (inventory != null)
+                {
+                    saveData.InventorySlotIndex = inventory.GetInventoryIndexForTool(this);
+                }
+            }
+
+            return JsonUtility.ToJson(saveData);
         }
 
         protected override void OnEnable()
@@ -151,6 +181,124 @@ namespace MineMogul.ToolImportApi.Game
                 _toolRootRigidbody.angularVelocity = Vector3.zero;
                 _toolRootRigidbody.interpolation = RigidbodyInterpolation.None;
             }
+        }
+
+        private string CaptureCustomSaveData()
+        {
+            if (!TryResolveRegisteredTool(out RegisteredTool registeredTool))
+            {
+                return null;
+            }
+
+            Api.ToolCustomSaveDataDelegate callback = registeredTool.Request != null
+                ? registeredTool.Request.CustomSaveData
+                : null;
+            if (callback == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return callback(this);
+            }
+            catch (System.Exception ex)
+            {
+                ToolImportApi.Plugin.ToolImportApiPlugin.LogWarning(
+                    "CustomSaveData callback failed for '" + GetToolIdForLog(registeredTool) + "': " + ex);
+                return null;
+            }
+        }
+
+        private void ApplyCustomSaveData(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return;
+            }
+
+            if (!TryResolveRegisteredTool(out RegisteredTool registeredTool))
+            {
+                return;
+            }
+
+            Api.ToolCustomLoadDataDelegate callback = registeredTool.Request != null
+                ? registeredTool.Request.CustomLoadData
+                : null;
+            if (callback == null)
+            {
+                return;
+            }
+
+            RuntimeImportedToolSaveData saveData = null;
+            try
+            {
+                saveData = JsonUtility.FromJson<RuntimeImportedToolSaveData>(json);
+            }
+            catch (System.Exception ex)
+            {
+                ToolImportApi.Plugin.ToolImportApiPlugin.LogWarning(
+                    "Custom load data parse failed for '" + GetToolIdForLog(registeredTool) + "': " + ex);
+                return;
+            }
+
+            if (saveData == null || string.IsNullOrEmpty(saveData.ToolImportCustomData))
+            {
+                return;
+            }
+
+            try
+            {
+                callback(this, saveData.ToolImportCustomData);
+            }
+            catch (System.Exception ex)
+            {
+                ToolImportApi.Plugin.ToolImportApiPlugin.LogWarning(
+                    "CustomLoadData callback failed for '" + GetToolIdForLog(registeredTool) + "': " + ex);
+            }
+        }
+
+        private bool TryResolveRegisteredTool(out RegisteredTool registeredTool)
+        {
+            registeredTool = null;
+            ToolImportRegistry registry = ToolImportRuntime.Registry;
+            if (registry == null)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(RegistrationKey) &&
+                registry.TryGetRegisteredTool(RegistrationKey, out registeredTool))
+            {
+                return true;
+            }
+
+            if (registry.TryGetRegisteredToolBySavableId((int)SavableObjectID, out registeredTool))
+            {
+                if (registeredTool != null && !string.IsNullOrWhiteSpace(registeredTool.FullToolId))
+                {
+                    RegistrationKey = registeredTool.FullToolId;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private string GetToolIdForLog(RegisteredTool registeredTool)
+        {
+            if (registeredTool != null && !string.IsNullOrWhiteSpace(registeredTool.FullToolId))
+            {
+                return registeredTool.FullToolId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(RegistrationKey))
+            {
+                return RegistrationKey;
+            }
+
+            return "<unknown-runtime-tool>";
         }
     }
 }

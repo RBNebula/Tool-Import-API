@@ -1,9 +1,13 @@
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
+using MineMogul.ToolImportApi.Game;
 
 namespace MineMogul.ToolImportApi.Api
 {
+    public delegate string ToolCustomSaveDataDelegate(RuntimeImportedTool tool);
+    public delegate void ToolCustomLoadDataDelegate(RuntimeImportedTool tool, string customDataJson);
+
     public sealed class ToolRegistrationRequest
     {
         public string ModId;
@@ -21,6 +25,8 @@ namespace MineMogul.ToolImportApi.Api
         public ToolViewTransformRequest ViewModelTransform;
         public bool EnableCustomPositioning;
         public string CustomPositioningResourceName;
+        public ToolCustomSaveDataDelegate CustomSaveData;
+        public ToolCustomLoadDataDelegate CustomLoadData;
     }
 
     public sealed class ToolShopMetadata

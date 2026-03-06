@@ -282,6 +282,29 @@ namespace MineMogul.ToolImportApi.Core
             }
         }
 
+        internal bool TryGetRegisteredTool(string fullToolId, out RegisteredTool tool)
+        {
+            tool = null;
+            if (string.IsNullOrWhiteSpace(fullToolId))
+            {
+                return false;
+            }
+
+            lock (_gate)
+            {
+                return _registeredById.TryGetValue(fullToolId, out tool) && tool != null;
+            }
+        }
+
+        internal bool TryGetRegisteredToolBySavableId(int savableId, out RegisteredTool tool)
+        {
+            tool = null;
+            lock (_gate)
+            {
+                return _registeredBySavableId.TryGetValue(savableId, out tool) && tool != null;
+            }
+        }
+
         private IEnumerator FinalizeSingleRegistration(PendingRegistration pending)
         {
             if (pending == null || pending.Request == null)

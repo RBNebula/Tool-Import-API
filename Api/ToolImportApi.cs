@@ -121,7 +121,9 @@ namespace MineMogul.ToolImportApi.Api
                 ArmPose = CloneArmPose(request.ArmPose),
                 ViewModelTransform = CloneViewModelTransform(request.ViewModelTransform),
                 EnableCustomPositioning = request.EnableCustomPositioning,
-                CustomPositioningResourceName = request.CustomPositioningResourceName
+                CustomPositioningResourceName = request.CustomPositioningResourceName,
+                CustomSaveData = request.CustomSaveData,
+                CustomLoadData = request.CustomLoadData
             };
 
             if (request.ShopMetadata != null)
