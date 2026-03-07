@@ -20,7 +20,7 @@ namespace MineMogul.ToolImportApi.Plugin
     {
         public const string PluginGuid = "com.main.toolimportapi";
         public const string PluginName = "Tool Import API";
-        public const string PluginVersion = "1.0.1";
+        public const string PluginVersion = "1.0.2";
 
         private static readonly Harmony HarmonyInstance = new Harmony(PluginGuid);
         private static ToolImportApiPlugin _instance;
@@ -28,6 +28,7 @@ namespace MineMogul.ToolImportApi.Plugin
         private static float _startupLoadGraceSeconds = 6f;
 
         private ConfigEntry<bool> _enableModMogulIntegration;
+        private ConfigEntry<bool> _enableToolSpawnKey;
         private ConfigEntry<KeyboardShortcut> _debugSpawnKey;
         private ConfigEntry<string> _debugSpawnToolId;
         private ConfigEntry<bool> _verboseLog;
@@ -87,17 +88,23 @@ namespace MineMogul.ToolImportApi.Plugin
                 true,
                 "When true, register tools in ModMogul if ModMogul is available.");
 
+            _enableToolSpawnKey = Config.Bind(
+                "Debug",
+                "EnableToolSpawnKey",
+                false,
+                "When true, enables SpawnAnyToolKey (F7 by default) for debug tool spawning.");
+
             _debugSpawnKey = Config.Bind(
                 "Debug",
                 "SpawnAnyToolKey",
                 new KeyboardShortcut(KeyCode.F7),
-                "Spawns the first registered tool to your inventory for testing.");
+                "Spawns the first registered tool to your inventory for testing when EnableToolSpawnKey is true.");
 
             _debugSpawnToolId = Config.Bind(
                 "Debug",
                 "SpawnSpecificToolId",
                 string.Empty,
-                "If set, F7 spawns this full id (ModId.ToolId) instead of the first tool.");
+                "If set, F7 spawns this full id (ModId.ToolId) instead of the first tool (when EnableToolSpawnKey is true).");
 
             _verboseLog = Config.Bind(
                 "Debug",
@@ -211,7 +218,7 @@ namespace MineMogul.ToolImportApi.Plugin
 
         private void TryHandleDebugSpawn()
         {
-            if (_registry == null || !_debugSpawnKey.Value.IsDown())
+            if (_registry == null || !_enableToolSpawnKey.Value || !_debugSpawnKey.Value.IsDown())
             {
                 return;
             }
