@@ -55,3 +55,4 @@ nunit-*.xml
 
 # Local branding/source assets
 Branding/
+*.xcf
