@@ -14,15 +14,11 @@ using UnityEngine.SceneManagement;
 
 namespace MineMogul.ToolImportApi.Plugin
 {
-    [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
-    [BepInDependency("modmogul.core", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInPlugin(ModInfo.PLUGIN_GUID, ModInfo.PLUGIN_NAME, ModInfo.PLUGIN_VERSION)]
+    [BepInDependency(ModInfo.MOD_MOGUL_PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     public sealed class ToolImportApiPlugin : BaseUnityPlugin
     {
-        public const string PluginGuid = "com.main.toolimportapi";
-        public const string PluginName = "Tool Import API";
-        public const string PluginVersion = "1.0.3";
-
-        private static readonly Harmony HarmonyInstance = new Harmony(PluginGuid);
+        private static readonly Harmony HarmonyInstance = new Harmony(ModInfo.HARMONY_ID);
         private static ToolImportApiPlugin _instance;
         private static float _startupUnscaledTime;
         private static float _startupLoadGraceSeconds = 6f;
@@ -52,7 +48,7 @@ namespace MineMogul.ToolImportApi.Plugin
             string cacheDirectory = System.IO.Path.Combine(
                 System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Paths.PluginPath,
                 ".tool-import-cache");
-            string savableMapPath = System.IO.Path.Combine(Paths.ConfigPath, "com.main.toolimportapi.savable-map.txt");
+            string savableMapPath = System.IO.Path.Combine(Paths.ConfigPath, ModInfo.PLUGIN_GUID + ".savable-map.txt");
 
             _registry = CreateRegistry(cacheDirectory, savableMapPath, out ReflectionModMogulModelLoader modelLoader, out IModMogulAdapter modMogulAdapter);
             ToolImportRuntime.Registry = _registry;
@@ -64,7 +60,7 @@ namespace MineMogul.ToolImportApi.Plugin
 
             if (_verboseLog.Value)
             {
-                Logger.LogInfo("[ToolImportApi] Awake complete. ModelLoader=" + modelLoader.LoaderName +
+                Logger.LogInfo(ModInfo.LOG_PREFIX + " Awake complete. ModelLoader=" + modelLoader.LoaderName +
                                ", ModMogulAdapter=" + modMogulAdapter.GetType().Name +
                                ", InjectVanillaArmsIfMissing=" + _injectVanillaArmsIfMissing.Value +
                                ", ArmPoseEditorUiEnabled=" + _enableArmPoseEditorUi.Value +
@@ -165,7 +161,7 @@ namespace MineMogul.ToolImportApi.Plugin
             DontDestroyOnLoad(editorRoot);
             _armPoseEditorUi = editorRoot.AddComponent<ArmPoseEditorUi>();
             _armPoseEditorUi.Initialize(Logger, _armPoseEditorToggleKey, _armPoseEditorShowLeftArm, exportDirectory);
-            Logger.LogInfo("[ToolImportApi] Arm pose editor UI enabled. Toggle key: " + _armPoseEditorToggleKey.Value + ", exportDir=" + exportDirectory);
+            Logger.LogInfo(ModInfo.LOG_PREFIX + " Arm pose editor UI enabled. Toggle key: " + _armPoseEditorToggleKey.Value + ", exportDir=" + exportDirectory);
         }
 
         private ToolImportRegistry CreateRegistry(
@@ -236,11 +232,11 @@ namespace MineMogul.ToolImportApi.Plugin
 
             if (success)
             {
-                Logger.LogInfo("[ToolImportApi] Debug spawn success: " + message);
+                Logger.LogInfo(ModInfo.LOG_PREFIX + " Debug spawn success: " + message);
             }
             else
             {
-                Logger.LogWarning("[ToolImportApi] Debug spawn failed: " + message);
+                Logger.LogWarning(ModInfo.LOG_PREFIX + " Debug spawn failed: " + message);
             }
         }
 
@@ -279,7 +275,7 @@ namespace MineMogul.ToolImportApi.Plugin
         {
             if (_instance != null)
             {
-                _instance.Logger.LogInfo("[ToolImportApi] " + message);
+                _instance.Logger.LogInfo(ModInfo.LOG_PREFIX + " " + message);
             }
         }
 
@@ -287,7 +283,7 @@ namespace MineMogul.ToolImportApi.Plugin
         {
             if (_instance != null)
             {
-                _instance.Logger.LogWarning("[ToolImportApi] " + message);
+                _instance.Logger.LogWarning(ModInfo.LOG_PREFIX + " " + message);
             }
         }
     }

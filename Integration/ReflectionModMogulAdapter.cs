@@ -210,7 +210,7 @@ namespace MineMogul.ToolImportApi.Integration
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("[ToolImportApi] Itemizer.RegisterItem invocation failed: " + ex);
+                _logger.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Itemizer.RegisterItem invocation failed: " + ex);
             }
 
             return null;

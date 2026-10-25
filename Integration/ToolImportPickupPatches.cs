@@ -65,7 +65,7 @@ namespace MineMogul.ToolImportApi.Integration
             if (convertedCount <= 0)
             {
                 ToolImportApi.Plugin.ToolImportApiPlugin.LogWarning(
-                    "[ToolImportApi] ToolBuilder->Runtime conversion failed for '" + fullToolId +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " ToolBuilder->Runtime conversion failed for '" + fullToolId +
                     "' (resolvedObjectId=" + resolvedSavableId + ", incomingType=" + tool.GetType().Name + "): " + lastMessage);
                 return true;
             }
@@ -75,7 +75,7 @@ namespace MineMogul.ToolImportApi.Integration
             {
                 tool.Quantity = remaining;
                 ToolImportApi.Plugin.ToolImportApiPlugin.LogWarning(
-                    "[ToolImportApi] ToolBuilder->Runtime conversion partial for '" + fullToolId +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " ToolBuilder->Runtime conversion partial for '" + fullToolId +
                     "': converted=" + convertedCount + ", remainingIncomingQuantity=" + remaining +
                     ". LastError=" + lastMessage);
                 return true;
@@ -90,7 +90,7 @@ namespace MineMogul.ToolImportApi.Integration
             if (ToolImportApi.Plugin.ToolImportApiPlugin.VerboseLogEnabled)
             {
                 ToolImportApi.Plugin.ToolImportApiPlugin.LogInfo(
-                    "[ToolImportApi] ToolBuilder->Runtime conversion complete for '" + fullToolId +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " ToolBuilder->Runtime conversion complete for '" + fullToolId +
                     "': converted=" + convertedCount + ", resolvedObjectId=" + resolvedSavableId +
                     ", incomingType=" + tool.GetType().Name + ".");
             }
@@ -197,7 +197,7 @@ namespace MineMogul.ToolImportApi.Integration
             if (spawnPoint == null)
             {
                 ToolImportApi.Plugin.ToolImportApiPlugin.LogWarning(
-                    "[ToolImportApi] Shop direct tool spawn fallback for '" + fullToolId +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Shop direct tool spawn fallback for '" + fullToolId +
                     "': random spawn point unavailable.");
                 return true;
             }
@@ -206,7 +206,7 @@ namespace MineMogul.ToolImportApi.Integration
             if (!registry.TrySpawnToolFromShop(fullToolId, spawnPoint.transform.position, spawnPoint.transform.rotation, spawnQuantity, out string message))
             {
                 ToolImportApi.Plugin.ToolImportApiPlugin.LogWarning(
-                    "[ToolImportApi] Shop direct tool spawn failed for '" + fullToolId +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Shop direct tool spawn failed for '" + fullToolId +
                     "' (resolvedObjectId=" + resolvedSavableId + "): " + message + ". Falling back to crate spawn.");
                 return true;
             }
@@ -214,7 +214,7 @@ namespace MineMogul.ToolImportApi.Integration
             if (ToolImportApi.Plugin.ToolImportApiPlugin.VerboseLogEnabled)
             {
                 ToolImportApi.Plugin.ToolImportApiPlugin.LogInfo(
-                    "[ToolImportApi] Shop direct tool spawn complete for '" + fullToolId +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Shop direct tool spawn complete for '" + fullToolId +
                     "' (resolvedObjectId=" + resolvedSavableId + ", quantity=" + spawnQuantity + ").");
             }
 

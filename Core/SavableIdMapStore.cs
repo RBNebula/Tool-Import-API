@@ -123,7 +123,7 @@ namespace MineMogul.ToolImportApi.Core
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning("[ToolImportApi] Failed to load savable id map: " + ex.Message);
+                _logger?.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Failed to load savable id map: " + ex.Message);
             }
         }
 
@@ -162,7 +162,7 @@ namespace MineMogul.ToolImportApi.Core
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning("[ToolImportApi] Failed to save savable id map: " + ex.Message);
+                _logger?.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Failed to save savable id map: " + ex.Message);
             }
         }
     }

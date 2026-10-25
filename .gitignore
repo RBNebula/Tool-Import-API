@@ -53,6 +53,6 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 
-# Local branding/source assets
+# Local assets
 Branding/
-*.xcf
+DirectoryOverview.md

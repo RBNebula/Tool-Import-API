@@ -120,7 +120,7 @@ namespace MineMogul.ToolImportApi.Core
                     _isFinalizeRunning = false;
                 }
 
-                _logger.LogError("[ToolImportApi] Failed to start registration finalization coroutine: " + ex);
+                _logger.LogError(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Failed to start registration finalization coroutine: " + ex);
             }
         }
 
@@ -345,7 +345,7 @@ namespace MineMogul.ToolImportApi.Core
 
             if (!_iconLoader.TryLoadIcon(iconBytes, pending.FullToolId + "_icon", out Sprite iconSprite, out string iconParseError))
             {
-                _logger.LogError("[ToolImportApi] " + pending.FullToolId + " icon decode failed: " + iconParseError);
+                _logger.LogError(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " " + pending.FullToolId + " icon decode failed: " + iconParseError);
                 yield break;
             }
 
@@ -366,7 +366,7 @@ namespace MineMogul.ToolImportApi.Core
             yield return _gameToolFactory.CreateRegisteredTool(buildRequest, buildResult);
             if (!buildResult.Success || buildResult.Tool == null)
             {
-                _logger.LogError("[ToolImportApi] " + pending.FullToolId + " build failed: " + buildResult.Error);
+                _logger.LogError(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " " + pending.FullToolId + " build failed: " + buildResult.Error);
                 yield break;
             }
 
@@ -395,7 +395,7 @@ namespace MineMogul.ToolImportApi.Core
                 }
                 else
                 {
-                    _logger.LogWarning("[ToolImportApi] ModMogul register skipped for " + pending.FullToolId + ": " + registerMessage);
+                    _logger.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " ModMogul register skipped for " + pending.FullToolId + ": " + registerMessage);
                 }
 
                 if (_modMogulAdapter.TryAddToShop(buildResult.Tool, pending.Request, out string shopMessage))
@@ -404,7 +404,7 @@ namespace MineMogul.ToolImportApi.Core
                 }
                 else
                 {
-                    _logger.LogWarning("[ToolImportApi] ModMogul shop add skipped for " + pending.FullToolId + ": " + shopMessage);
+                    _logger.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " ModMogul shop add skipped for " + pending.FullToolId + ": " + shopMessage);
                 }
             }
 
@@ -424,7 +424,7 @@ namespace MineMogul.ToolImportApi.Core
                     out bytes,
                     out string readError))
             {
-                _logger.LogError("[ToolImportApi] " + pending.FullToolId + " " + resourceLabel + " load failed: " + readError);
+                _logger.LogError(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " " + pending.FullToolId + " " + resourceLabel + " load failed: " + readError);
                 return false;
             }
 
@@ -443,7 +443,7 @@ namespace MineMogul.ToolImportApi.Core
             }
 
             _logger.LogInfo(
-                "[ToolImportApi] Resource load ok for " + pending.FullToolId +
+                MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Resource load ok for " + pending.FullToolId +
                 ". iconRes=" + pending.Request.IconResourceName + " (" + iconBytes.Length + " bytes)" +
                 ", worldRes=" + pending.Request.WorldModelResourceName + " (" + worldModelBytes.Length + " bytes)" +
                 ", viewRes=" + pending.Request.ViewModelResourceName + " (" + viewModelBytes.Length + " bytes)");
@@ -465,14 +465,14 @@ namespace MineMogul.ToolImportApi.Core
                 {
                     if (_verboseDiagnostics)
                     {
-                        _logger.LogInfo("[ToolImportApi] Reusing persisted SavableObjectID " + persistedId + " for " + fullToolId + ".");
+                        _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Reusing persisted SavableObjectID " + persistedId + " for " + fullToolId + ".");
                     }
 
                     return persistedId;
                 }
 
                 _logger.LogWarning(
-                    "[ToolImportApi] Persisted SavableObjectID " + persistedId +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Persisted SavableObjectID " + persistedId +
                     " for " + fullToolId + " is currently taken. Allocating a new id.");
             }
 
@@ -494,7 +494,7 @@ namespace MineMogul.ToolImportApi.Core
                     _savableIdStore?.Set(fullToolId, candidate);
                     if (_verboseDiagnostics)
                     {
-                        _logger.LogInfo("[ToolImportApi] Assigned SavableObjectID " + candidate + " to " + fullToolId + ".");
+                        _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Assigned SavableObjectID " + candidate + " to " + fullToolId + ".");
                     }
                     return candidate;
                 }
@@ -739,7 +739,7 @@ namespace MineMogul.ToolImportApi.Core
             }
 
             _logger.LogWarning(
-                "[ToolImportApi] Custom positioning parse failed for " + fullToolId +
+                MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Custom positioning parse failed for " + fullToolId +
                 " (" + resourceName + "): " + parseError);
             return false;
         }
@@ -768,7 +768,7 @@ namespace MineMogul.ToolImportApi.Core
             }
 
             _logger.LogInfo(
-                "[ToolImportApi] Custom positioning loaded for " + pending.FullToolId +
+                MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Custom positioning loaded for " + pending.FullToolId +
                 ". resource=" + resourceName +
                 ", boneOverrides=" + overrideCount +
                 ", hasViewModelTransform=" + (loadedViewTransform != null));
@@ -860,7 +860,7 @@ namespace MineMogul.ToolImportApi.Core
             catch (Exception ex)
             {
                 _logger.LogWarning(
-                    "[ToolImportApi] Failed to cache custom positioning data for " +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Failed to cache custom positioning data for " +
                     fullToolId + " at '" + outputPath + "': " + ex.Message);
             }
         }
@@ -1212,7 +1212,7 @@ namespace MineMogul.ToolImportApi.Core
         {
             if (_verboseDiagnostics)
             {
-                _logger.LogInfo("[ToolImportApi] " + message);
+                _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " " + message);
             }
         }
     }

@@ -42,9 +42,9 @@ public sealed class MyToolPlugin : BaseUnityPlugin
             CacheNamespace = "examplemod",
             DisplayName = "My Tool",
             Description = "Example imported tool.",
-            IconResourceName = "MyTool.Assets.Images.tool-icon.png",
-            WorldModelResourceName = "MyTool.Assets.Models.tool-world.glb",
-            ViewModelResourceName = "MyTool.Assets.Models.tool-view.glb"
+            IconResourceName = "MyTool.Resources.Img.tool-icon.png",
+            WorldModelResourceName = "MyTool.Resources.Models.tool-world.glb",
+            ViewModelResourceName = "MyTool.Resources.Models.tool-view.glb"
         });
 
         Logger.LogInfo($"Register: {result.Success} {result.FullToolId} {result.Message}");
@@ -78,9 +78,9 @@ ToolRegistrationRequest request = new ToolRegistrationRequest
     CacheNamespace = "examplemod",
     DisplayName = "My Gun",
     Description = "Example gun with persistent state.",
-    IconResourceName = "MyTool.Assets.Images.tool-icon.png",
-    WorldModelResourceName = "MyTool.Assets.Models.tool-world.glb",
-    ViewModelResourceName = "MyTool.Assets.Models.tool-view.glb",
+    IconResourceName = "MyTool.Resources.Img.tool-icon.png",
+    WorldModelResourceName = "MyTool.Resources.Models.tool-world.glb",
+    ViewModelResourceName = "MyTool.Resources.Models.tool-view.glb",
 
     CustomSaveData = tool =>
     {
@@ -133,11 +133,11 @@ Notes:
 MyToolMod/
   MyToolMod.csproj
   MyToolPlugin.cs
-  Assets/
+  Resources/
     Models/
       tool-world.glb
       tool-view.glb
-    Images/
+    Img/
       tool-icon.png
     Poses/
       examplemod.mytool.arm-pose.cs   (optional)
@@ -152,6 +152,15 @@ MyToolMod/
     <Nullable>enable</Nullable>
     <AssemblyName>MyToolMod</AssemblyName>
     <RootNamespace>MyToolMod</RootNamespace>
+    <ResourcesDir>Resources</ResourcesDir>
+    <ResourcesImgDir>$(ResourcesDir)\Img</ResourcesImgDir>
+    <ResourcesAudioDir>$(ResourcesDir)\Audio</ResourcesAudioDir>
+    <ResourcesModelsDir>$(ResourcesDir)\Models</ResourcesModelsDir>
+    <ResourcesPosesDir>$(ResourcesDir)\Poses</ResourcesPosesDir>
+    <ResourcesShadersDir>$(ResourcesDir)\Shaders</ResourcesShadersDir>
+    <ResourcesMaterialsDir>$(ResourcesDir)\Materials</ResourcesMaterialsDir>
+    <ResourcesTexturesDir>$(ResourcesDir)\Textures</ResourcesTexturesDir>
+    <ResourcesDataDir>$(ResourcesDir)\Data</ResourcesDataDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -174,20 +183,20 @@ MyToolMod/
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Assets\Poses\*.arm-pose.cs" />
+    <Compile Remove="$(ResourcesPosesDir)\*.arm-pose.cs" />
 
-    <EmbeddedResource Include="Assets\Models\tool-world.glb">
-      <LogicalName>MyToolMod.Assets.Models.tool-world.glb</LogicalName>
+    <EmbeddedResource Include="$(ResourcesModelsDir)\tool-world.glb">
+      <LogicalName>MyToolMod.Resources.Models.tool-world.glb</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Assets\Models\tool-view.glb">
-      <LogicalName>MyToolMod.Assets.Models.tool-view.glb</LogicalName>
+    <EmbeddedResource Include="$(ResourcesModelsDir)\tool-view.glb">
+      <LogicalName>MyToolMod.Resources.Models.tool-view.glb</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Assets\Images\tool-icon.png">
-      <LogicalName>MyToolMod.Assets.Images.tool-icon.png</LogicalName>
+    <EmbeddedResource Include="$(ResourcesImgDir)\tool-icon.png">
+      <LogicalName>MyToolMod.Resources.Img.tool-icon.png</LogicalName>
     </EmbeddedResource>
 
     <!-- Optional: include if file exists; safe when missing -->
-    <EmbeddedResource Include="Assets\Poses\*.arm-pose.cs">
+    <EmbeddedResource Include="$(ResourcesPosesDir)\*.arm-pose.cs">
       <LogicalName>%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
@@ -214,9 +223,9 @@ public sealed class MyToolPlugin : BaseUnityPlugin
     private const string ToolId = "mytool";
     private const string FullToolId = ModId + "." + ToolId;
 
-    private const string IconResource = "MyToolMod.Assets.Images.tool-icon.png";
-    private const string WorldResource = "MyToolMod.Assets.Models.tool-world.glb";
-    private const string ViewResource = "MyToolMod.Assets.Models.tool-view.glb";
+    private const string IconResource = "MyToolMod.Resources.Img.tool-icon.png";
+    private const string WorldResource = "MyToolMod.Resources.Models.tool-world.glb";
+    private const string ViewResource = "MyToolMod.Resources.Models.tool-view.glb";
     private const string PoseResource = FullToolId + ".arm-pose.cs";
 
     private void Awake()
@@ -268,7 +277,7 @@ public sealed class MyToolPlugin : BaseUnityPlugin
 6. Click `export`. File is written to:
    - `BepInEx/plugins/ToolImportAPI/ArmPoseExports/<fullToolId>.arm-pose.cs`
 7. Copy that file into your mod:
-   - `Assets/Poses/<fullToolId>.arm-pose.cs`
+   - `Resources/Poses/<fullToolId>.arm-pose.cs`
 8. Rebuild and redeploy your mod.
 
 ## What You Need For Your Mod (and where)
@@ -279,11 +288,11 @@ Use this structure in your mod project:
 YourMod/
   YourMod.csproj
   YourModPlugin.cs
-  Assets/
+  Resources/
     Models/
       your-tool-world.glb
       your-tool-view.glb
-    Images/
+    Img/
       your-tool-icon.png
     Poses/
       yourmod.yourtool.arm-pose.cs   (optional)
@@ -292,10 +301,10 @@ YourMod/
 File placement:
 - Plugin code file: `YourModPlugin.cs` at project root (or your normal code folder).
 - Project file: `YourMod.csproj` at project root.
-- World model: `Assets/Models/your-tool-world.glb`
-- View model: `Assets/Models/your-tool-view.glb`
-- Icon: `Assets/Images/your-tool-icon.png`
-- Optional arm pose: `Assets/Poses/<fullToolId>.arm-pose.cs`
+- World model: `Resources/Models/your-tool-world.glb`
+- View model: `Resources/Models/your-tool-view.glb`
+- Icon: `Resources/Img/your-tool-icon.png`
+- Optional arm pose: `Resources/Poses/<fullToolId>.arm-pose.cs`
 
 In `ToolRegistrationRequest`:
 - `WorldModelResourceName` must match your embedded world model logical name.
@@ -311,7 +320,7 @@ In `ToolRegistrationRequest`:
 Cause: pose file is being compiled as code.  
 Fix: add:
 ```xml
-<Compile Remove="Assets\Poses\*.arm-pose.cs" />
+<Compile Remove="$(ResourcesPosesDir)\*.arm-pose.cs" />
 ```
 
 ### Registration succeeds but model/icon fails to load

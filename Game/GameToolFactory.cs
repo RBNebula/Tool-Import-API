@@ -15,6 +15,21 @@ namespace MineMogul.ToolImportApi.Game
         private static readonly FieldInfo InteractionsField =
             typeof(BaseHeldTool).GetField("_interactions", BindingFlags.Instance | BindingFlags.NonPublic);
 
+        private static readonly FieldInfo ToolNameField =
+            GetFirstField(typeof(BaseHeldTool), "FallbackName", "Name");
+
+        private static readonly FieldInfo ToolDescriptionField =
+            GetFirstField(typeof(BaseHeldTool), "FallbackDescription", "Description");
+
+        private static readonly FieldInfo InteractionTypeField =
+            typeof(Interaction).GetField("InteractionType", BindingFlags.Instance | BindingFlags.Public);
+
+        private static readonly FieldInfo InteractionNameField =
+            GetFirstField(typeof(Interaction), "FallbackName", "Name");
+
+        private static readonly FieldInfo InteractionDescriptionField =
+            GetFirstField(typeof(Interaction), "FallbackDescription", "Description");
+
         private static readonly FieldInfo SaveLookupField =
             typeof(SavingLoadingManager).GetField("_lookup", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -92,10 +107,7 @@ namespace MineMogul.ToolImportApi.Game
 
                 tool = template.AddComponent<RuntimeImportedTool>();
                 tool.RegistrationKey = request.FullToolId;
-                tool.Name = request.Request.DisplayName;
-                tool.Description = string.IsNullOrWhiteSpace(request.Request.Description)
-                    ? "Imported mod tool."
-                    : request.Request.Description;
+                SetToolDisplayMetadata(tool, request.Request.DisplayName, request.Request.Description);
                 tool.SavableObjectID = (SavableObjectID)request.SavableId;
                 tool.MaxAmount = 1;
                 tool.Quantity = 1;
@@ -135,7 +147,7 @@ namespace MineMogul.ToolImportApi.Game
 
             if (loadedWorld == null)
             {
-                _logger.LogWarning("[ToolImportApi] World model load failed for " + request.FullToolId + ": " + worldError);
+                _logger.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " World model load failed for " + request.FullToolId + ": " + worldError);
                 loadedWorld = CreateFallbackVisual(worldRoot.transform, "WorldFallback");
             }
 
@@ -161,7 +173,7 @@ namespace MineMogul.ToolImportApi.Game
 
             if (loadedView == null)
             {
-                _logger.LogWarning("[ToolImportApi] View model load failed for " + request.FullToolId + ": " + viewError);
+                _logger.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " View model load failed for " + request.FullToolId + ": " + viewError);
                 loadedView = CreateFallbackVisual(viewRoot.transform, "ViewFallback");
             }
 
@@ -234,10 +246,7 @@ namespace MineMogul.ToolImportApi.Game
             runtimeTool.SavableObjectID = (SavableObjectID)tool.SavableId;
             runtimeTool.InventoryIcon = tool.Icon;
             runtimeTool.ProgrammerInventoryIcon = tool.Icon;
-            runtimeTool.Name = tool.Request.DisplayName;
-            runtimeTool.Description = string.IsNullOrWhiteSpace(tool.Request.Description)
-                ? "Imported mod tool."
-                : tool.Request.Description;
+            SetToolDisplayMetadata(runtimeTool, tool.Request.DisplayName, tool.Request.Description);
 
             if (!inventory.TryAddToInventory(runtimeTool))
             {
@@ -286,10 +295,7 @@ namespace MineMogul.ToolImportApi.Game
                 runtimeTool.SavableObjectID = (SavableObjectID)tool.SavableId;
                 runtimeTool.InventoryIcon = tool.Icon;
                 runtimeTool.ProgrammerInventoryIcon = tool.Icon;
-                runtimeTool.Name = tool.Request.DisplayName;
-                runtimeTool.Description = string.IsNullOrWhiteSpace(tool.Request.Description)
-                    ? "Imported mod tool."
-                    : tool.Request.Description;
+                SetToolDisplayMetadata(runtimeTool, tool.Request.DisplayName, tool.Request.Description);
                 runtimeTool.Owner = null;
 
                 instance.transform.SetParent(null, worldPositionStays: true);
@@ -393,7 +399,7 @@ namespace MineMogul.ToolImportApi.Game
         {
             if (viewModelRoot == null)
             {
-                _logger.LogWarning("[ToolImportApi] ViewModel root is null for " + fullToolId + ".");
+                _logger.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " ViewModel root is null for " + fullToolId + ".");
                 return;
             }
 
@@ -428,7 +434,7 @@ namespace MineMogul.ToolImportApi.Game
                 }
                 else
                 {
-                    _logger.LogWarning("[ToolImportApi] Arm fallback failed for " + fullToolId + ": " + injectInfo);
+                    _logger.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Arm fallback failed for " + fullToolId + ": " + injectInfo);
                 }
             }
             else
@@ -594,7 +600,7 @@ namespace MineMogul.ToolImportApi.Game
             Transform fpsArmsRoot = FindTransformByName(viewModelRoot, "FP_Arms_Unarmed");
             if (fpsArmsRoot == null)
             {
-                _logger.LogWarning("[ToolImportApi] Arm pose ignored for " + fullToolId + ": FP_Arms_Unarmed not found.");
+                _logger.LogWarning(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Arm pose ignored for " + fullToolId + ": FP_Arms_Unarmed not found.");
                 return;
             }
 
@@ -656,7 +662,7 @@ namespace MineMogul.ToolImportApi.Game
             }
 
             _logger.LogInfo(
-                "[ToolImportApi] Applied arm pose for " + fullToolId +
+                MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Applied arm pose for " + fullToolId +
                 ". overridesRequested=" + overrideCount +
                 ", applied=" + applied +
                 ", missing=" + missing +
@@ -687,7 +693,7 @@ namespace MineMogul.ToolImportApi.Game
             if (target == null)
             {
                 _logger.LogWarning(
-                    "[ToolImportApi] ViewModel transform override ignored for " + fullToolId +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " ViewModel transform override ignored for " + fullToolId +
                     ": target transform not found. path=" +
                     (string.IsNullOrWhiteSpace(transformRequest.TransformPath) ? "<auto>" : transformRequest.TransformPath));
                 return;
@@ -709,7 +715,7 @@ namespace MineMogul.ToolImportApi.Game
             }
 
             _logger.LogInfo(
-                "[ToolImportApi] Applied viewmodel transform for " + fullToolId +
+                MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Applied viewmodel transform for " + fullToolId +
                 ". target=" + GetTransformPath(target) +
                 ", path=" + (string.IsNullOrWhiteSpace(transformRequest.TransformPath) ? "<auto>" : transformRequest.TransformPath));
         }
@@ -1109,8 +1115,8 @@ namespace MineMogul.ToolImportApi.Game
                 return;
             }
 
-            _logger.LogInfo("[ToolImportApi] View hierarchy dump for " + fullToolId + " (2 levels):");
-            _logger.LogInfo("[ToolImportApi]   root: " + viewModelRoot.name + " (children=" + viewModelRoot.childCount + ")");
+            _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " View hierarchy dump for " + fullToolId + " (2 levels):");
+            _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + "   root: " + viewModelRoot.name + " (children=" + viewModelRoot.childCount + ")");
 
             for (int i = 0; i < viewModelRoot.childCount; i++)
             {
@@ -1121,7 +1127,7 @@ namespace MineMogul.ToolImportApi.Game
                 }
 
                 _logger.LogInfo(
-                    "[ToolImportApi]   - " + child.name +
+                    MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + "   - " + child.name +
                     " (children=" + child.childCount +
                     ", meshR=" + child.GetComponentsInChildren<MeshRenderer>(true).Length +
                     ", skinnedR=" + child.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length + ")");
@@ -1132,13 +1138,13 @@ namespace MineMogul.ToolImportApi.Game
                     Transform grandChild = child.GetChild(j);
                     if (grandChild != null)
                     {
-                        _logger.LogInfo("[ToolImportApi]     * " + grandChild.name + " (children=" + grandChild.childCount + ")");
+                        _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + "     * " + grandChild.name + " (children=" + grandChild.childCount + ")");
                     }
                 }
 
                 if (child.childCount > grandChildLimit)
                 {
-                    _logger.LogInfo("[ToolImportApi]     * ... (" + (child.childCount - grandChildLimit) + " more)");
+                    _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + "     * ... (" + (child.childCount - grandChildLimit) + " more)");
                 }
             }
         }
@@ -1159,13 +1165,52 @@ namespace MineMogul.ToolImportApi.Game
             InteractionsField.SetValue(tool, interactions);
         }
 
-        private static Interaction CreateInteraction(string name, string description)
+        private static Interaction CreateInteraction(string interactionTypeName, string description)
         {
             Interaction interaction = ScriptableObject.CreateInstance<Interaction>();
-            interaction.Name = name;
-            interaction.Description = description;
+
+            if (InteractionTypeField != null)
+            {
+                object interactionType = Enum.Parse(
+                    InteractionTypeField.FieldType,
+                    interactionTypeName,
+                    ignoreCase: false);
+                InteractionTypeField.SetValue(interaction, interactionType);
+            }
+
+            InteractionNameField?.SetValue(interaction, interactionTypeName);
+            InteractionDescriptionField?.SetValue(interaction, description);
             interaction.hideFlags = HideFlags.HideAndDontSave;
             return interaction;
+        }
+
+        private static void SetToolDisplayMetadata(BaseHeldTool tool, string displayName, string description)
+        {
+            if (tool == null)
+            {
+                return;
+            }
+
+            ToolNameField?.SetValue(tool, displayName);
+            ToolDescriptionField?.SetValue(
+                tool,
+                string.IsNullOrWhiteSpace(description) ? "Imported mod tool." : description);
+        }
+
+        private static FieldInfo GetFirstField(Type type, params string[] fieldNames)
+        {
+            for (int i = 0; i < fieldNames.Length; i++)
+            {
+                FieldInfo field = type.GetField(
+                    fieldNames[i],
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (field != null)
+                {
+                    return field;
+                }
+            }
+
+            return null;
         }
 
         private static void RebindModelReferences(RuntimeImportedTool tool, Transform instanceRoot)
@@ -1282,7 +1327,7 @@ namespace MineMogul.ToolImportApi.Game
         {
             if (_options.VerboseViewModelLogs)
             {
-                _logger.LogInfo("[ToolImportApi] " + message);
+                _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " " + message);
             }
         }
     }

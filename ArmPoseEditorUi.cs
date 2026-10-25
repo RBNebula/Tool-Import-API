@@ -1024,7 +1024,7 @@ namespace MineMogul.ToolImportApi.Plugin
                 resourceName + "\".";
             if (_logger != null)
             {
-                _logger.LogInfo("[ToolImportApi] " + _status);
+                _logger.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " " + _status);
             }
         }
 

@@ -45,7 +45,7 @@ namespace MineMogul.ToolImportApi.Api
             for (int i = 0; i < staged.Count; i++)
             {
                 ToolRegistrationResult result = sink.Register(staged[i].Request, staged[i].SourceAssembly);
-                logger?.LogInfo("[ToolImportApi] Flushed queued registration " + result.FullToolId + ": " + result.Message);
+                logger?.LogInfo(MineMogul.ToolImportApi.Plugin.ModInfo.LOG_PREFIX + " Flushed queued registration " + result.FullToolId + ": " + result.Message);
             }
         }
 
